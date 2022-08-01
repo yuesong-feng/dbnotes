@@ -3,6 +3,7 @@
 在openGauss数据库中，相对于行存以页为单元进行压缩，列存以CU为单元具有天然的压缩优势。
 
 在openGauss中有三种压缩级别：LOW, MIDDLE, HIGH。指定的压缩等级越高，则数据的压缩率越高。除此之外还可以选择不开启压缩。
+
 ```c
 typedef enum OptCompress {
     COMPRESS_NO = 0,
@@ -11,7 +12,9 @@ typedef enum OptCompress {
     COMPRESS_HIGH,
 } OptCompress;
 ```
+
 对于压缩算法，一共有：
+
 ```c++
 #define CU_DeltaCompressed 0x0001
 #define CU_DicEncode 0x0002
@@ -28,6 +31,7 @@ typedef enum OptCompress {
 ```
 
 对于一个CU的压缩，代码在`CU::Compress(int valCount, int16 compress_modes, int align_size)`函数里：
+
 ```c++
 void CU::Compress(int valCount, int16 compress_modes, int align_size)
 {
@@ -70,7 +74,9 @@ void CU::Compress(int valCount, int16 compress_modes, int align_size)
     FreeSrcBuf();
 }
 ```
+
 实际的数据压缩发生在`CU::CompressData(_out_ char* outBuf, _in_ int nVals, _in_ int16 compress_modes, int align_size)`函数里：
+
 ```c++
 bool CU::CompressData(_out_ char* outBuf, _in_ int nVals, _in_ int16 compress_modes, int align_size)
 {
@@ -194,6 +200,7 @@ bool CU::CompressData(_out_ char* outBuf, _in_ int nVals, _in_ int16 compress_mo
     return false;
 }
 ```
+
 对于SequenceCodec类的压缩，会先判断类型，如果是timestamp则使用Delta2压缩，是float类型则使用XOR压缩。然后还会判断压缩级别，如果是MIDDLE或HIGH则还需要分别使用lz4和zlib进行压缩。
 
 对于IntegerCoder类的压缩，会先进行Delta压缩，如果使用RLE的话再使用RLE压缩，然后对压缩级别为MIDDLE和HIGH的情况分别使用lz4和zlib压缩。
@@ -201,7 +208,6 @@ bool CU::CompressData(_out_ char* outBuf, _in_ int nVals, _in_ int16 compress_mo
 对于StringCoder类的压缩，会先判断是否使用字典压缩，如果使用则先进行字典压缩，然后对数字部分使用IntegerCoder进行压缩。如果字典压缩失败或者没有允许使用字典压缩，则直接对于LOW和MIDDLE级别使用lz4压缩，对于HIGH级别使用zlib压缩。
 
 -----------------------------
-
 
 可以看到整个流程为：
 先判断是否允许了tsdb（时序数据库）并且类型为timestamp或者float类型，如果是，则压缩是由SequenceCodec类完成的，timestamp则使用了Delta2压缩，float则使用了XOR压缩。如果压缩级别为MIDDLE或HIGH，则还需要进行lz4或zlib压缩。
@@ -225,7 +231,6 @@ numeric类型则要判断压缩级别，如果级别为LOW，则不压缩numeric
 |         | LOW    | MIDDLE | HIGH |
 | ------- | ------ | ------ | ---- |
 | numeric | 不压缩 | lz4    | zlib |
-
 
 对于不是IntLike（类整型）的情况，如果类型大小在(0, 8]范围，则由IntegerCoder类完成，并使用RLE压缩，如果级别为MIDDLE或HIGH还需要分别使用lz4和zlib压缩。
 

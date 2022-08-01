@@ -13,6 +13,7 @@
 `repeat(exp, n)` 重复n次exp
 
 先创建`random_string()`函数：
+
 ```
 CREATE OR REPLACE FUNCTION random_string(
   num INTEGER,
