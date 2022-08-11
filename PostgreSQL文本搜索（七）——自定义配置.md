@@ -1,6 +1,6 @@
 # PostgreSQL文本搜索（七）——自定义配置
 
-文本搜索配置指定了将文档转化为`tsvector`所需的所有选项：使用词法分析器将文本分解为token，以及使用字典将每个token转化为lexeme。每一次对`to_tsvector`或`to_tsquery`的调用都需要一个文本搜索配置来执行其处理。配置参数`default_text_search_config`指定了默认配置的名称，如果省略了一个明确的配置参数，文本搜索函数就会使用这个配置。它可以在`postgresql.conf`中设置，或者使用`SET`命令为单个会话设置。
+文本搜索配置指定了将文档转化为`tsvector`所需的所有选项：使用词法分析器将文本分解为token，以及使用词典将每个token转化为lexeme。每一次对`to_tsvector`或`to_tsquery`的调用都需要一个文本搜索配置来执行其处理。配置参数`default_text_search_config`指定了默认配置的名称，如果省略了一个明确的配置参数，文本搜索函数就会使用这个配置。它可以在`postgresql.conf`中设置，或者使用`SET`命令为单个会话设置。
 
 有几个预定义的文本搜索配置可用，你也可以很容易地创建自定义配置。为了便于管理文本搜索对象，有一组SQL命令可用，还有几个psql命令可以显示文本搜索对象的信息。
 
